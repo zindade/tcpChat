@@ -7,41 +7,62 @@ import java.util.Scanner;
 
 public class Client {
 
-    private Socket socket = null;
-    private Scanner scanner = null;
-    private DataOutputStream out = null;
+    private Socket socket;
+    private Scanner scanner;
+    private PrintWriter out;
+    private BufferedReader in;
 
     public Client(String addr, int port) {
         try {
+
             socket = new Socket(addr, port);
-            System.out.println("Connected");
+            System.out.println("Connected to " + addr + ":" + port);
+
 
             scanner = new Scanner(System.in);
-            out = new DataOutputStream(socket.getOutputStream());
-        } catch (UnknownHostException u) {
-            System.out.println(u);
-            return;
-        } catch (IOException i) {
-            System.out.println(i);
-            return;
-        }
+            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-        String m = "";
+            String msg = "";
 
-        while (!m.equals("Over")) {
-            try {
-                m = scanner.nextLine();
-                out.writeUTF(m);
-            } catch (IOException i) {
-                System.out.println(i);
+            while (true) {
+                System.out.print("You: ");
+                msg = scanner.nextLine();
+
+                if (msg.equalsIgnoreCase("exit")) {
+                    System.out.println("Closing connection...");
+                    break;
+                }
+
+
+                out.println(msg);
+
+
+                String response = in.readLine();
+                if (response == null) {
+                    System.out.println("Server closed the connection.");
+                    break;
+                }
+                System.out.println("Server: " + response);
             }
-        }
-        try {
-            scanner.close();
-            out.close();
-            socket.close();
+
+            close();
+
+        } catch (UnknownHostException u) {
+            System.out.println("Unknown host: " + u.getMessage());
         } catch (IOException i) {
-            System.out.println(i);
+            System.out.println("IOException: " + i.getMessage());
+        }
+    }
+
+    private void close() {
+        try {
+            if (scanner != null) scanner.close();
+            if (out != null) out.close();
+            if (in != null) in.close();
+            if (socket != null) socket.close();
+        } catch (IOException i) {
+            System.out.println("Error closing resources: " + i.getMessage());
         }
     }
 }
