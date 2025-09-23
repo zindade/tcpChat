@@ -14,19 +14,17 @@ public class Client {
 
     public Client(String addr, int port) {
         try {
-
             socket = new Socket(addr, port);
             System.out.println("Connected to " + addr + ":" + port);
-
 
             scanner = new Scanner(System.in);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            String msg = "";
+            String msg;
 
             while (true) {
-                System.out.print("You: ");
+                System.out.print("You (0=message, 1=command, exit=quit): ");
                 msg = scanner.nextLine();
 
                 if (msg.equalsIgnoreCase("exit")) {
@@ -34,9 +32,7 @@ public class Client {
                     break;
                 }
 
-
                 out.println(msg);
-
 
                 String response = in.readLine();
                 if (response == null) {

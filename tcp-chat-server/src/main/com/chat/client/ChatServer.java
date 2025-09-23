@@ -1,6 +1,6 @@
 package com.chat.server;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -14,22 +14,11 @@ public class ChatServer {
             System.out.println("Server listening on port " + PORT);
 
             while (true) {
-                try (Socket socket = serverSocket.accept();
-                     BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                     PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
+                Socket socket = serverSocket.accept();
+                System.out.println("New client connected from " + socket.getInetAddress().getHostAddress());
 
-                    System.out.println("Client connected from " + socket.getInetAddress().getHostAddress());
 
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        System.out.println("Received: " + line);
-                        writer.println("Echo: " + line); // devolve ao cliente
-                    }
-
-                    System.out.println("Client disconnected");
-                } catch (IOException e) {
-                    System.out.println("Exception caught: " + e);
-                }
+                new Thread(new ClientHandler(socket)).start();
             }
         } catch (IOException e) {
             e.printStackTrace();
