@@ -19,15 +19,16 @@ public class ClientHandler implements Runnable {
 
         try (
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                // MUDANÇA EXATA: manter referência no campo e autoFlush=true
+                // manter referência no campo e autoFlush=true
                 PrintWriter outWriter = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true)
         ) {
             this.out = outWriter;
 
-            // MUDANÇA EXATA: usar helper
+            // registar cliente
             ChatServer.registerClient(out);
 
             ChatServer.broadcast("[SERVER] " + remote + " entrou no chat.");
+            ChatServer.logThreadPoolStatus();
 
             String input;
             while ((input = in.readLine()) != null) {
@@ -35,21 +36,22 @@ public class ClientHandler implements Runnable {
 
                 if ("SHUTDOWN".equals(response)) {
                     ChatServer.broadcast("[SERVER] A encerrar por pedido...");
-                    // NOTA: abrupto; idealmente faz shutdown gracioso.
-                    System.exit(0);
+                    ChatServer.stopServer(); // agora faz shutdown gracioso
                     return;
                 } else {
-                    // MUDANÇA EXATA: difundir a resposta processada
+                    // difundir a resposta processada
                     ChatServer.broadcast("[" + remote + "] " + response);
                 }
             }
         } catch (IOException e) {
             System.err.println("Client disconnected: " + remote + " (" + e.getMessage() + ")");
         } finally {
-            // MUDANÇA EXATA: remover e avisar saída
+            // remover e avisar saída
             ChatServer.unregisterClient(out);
             ChatServer.broadcast("[SERVER] " + remote + " saiu do chat.");
-            try { socket.close(); } catch (IOException ignored) {}
+            try {
+                socket.close();
+            } catch (IOException ignored) {}
         }
     }
 }

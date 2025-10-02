@@ -15,37 +15,43 @@ public class Client {
     public Client(String addr, int port) {
         try {
             socket = new Socket(addr, port);
-            System.out.println("Connected to " + addr + ":" + port);
+            System.out.println("Ligado a " + addr + ":" + port);
 
             scanner = new Scanner(System.in);
-            out = new PrintWriter(socket.getOutputStream(), true);
+            out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            String msg;
+
+            Thread reader = new Thread(() -> {
+                try {
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        System.out.println(line);
+                    }
+                    System.out.println("[INFO] Desligado do servidor.");
+                } catch (IOException e) {
+                    System.out.println("[INFO] Ligação encerrada: " + e.getMessage());
+                }
+            }, "server-listener");
+            reader.setDaemon(true);
+            reader.start();
+
 
             while (true) {
-                System.out.print("You (0=message, 1=command, exit=quit): ");
-                msg = scanner.nextLine();
+                System.out.print("Tu (prefixa com 0 ou 1, 'exit' para sair): ");
+                String msg = scanner.nextLine();
 
-                if (msg.equalsIgnoreCase("exit")) {
-                    System.out.println("Closing connection...");
+                if ("exit".equalsIgnoreCase(msg)) {
+                    System.out.println("A encerrar ligação...");
                     break;
                 }
-
                 out.println(msg);
-
-                String response = in.readLine();
-                if (response == null) {
-                    System.out.println("Server closed the connection.");
-                    break;
-                }
-                System.out.println("Server: " + response);
             }
 
             close();
 
         } catch (UnknownHostException u) {
-            System.out.println("Unknown host: " + u.getMessage());
+            System.out.println("Host desconhecido: " + u.getMessage());
         } catch (IOException i) {
             System.out.println("IOException: " + i.getMessage());
         }
@@ -56,9 +62,18 @@ public class Client {
             if (scanner != null) scanner.close();
             if (out != null) out.close();
             if (in != null) in.close();
-            if (socket != null) socket.close();
+            if (socket != null && !socket.isClosed()) socket.close();
         } catch (IOException i) {
-            System.out.println("Error closing resources: " + i.getMessage());
+            System.out.println("Erro ao fechar recursos: " + i.getMessage());
         }
+    }
+
+    //private void connectToServer
+    //private void setupStreams ()
+    //private void sendMessages()
+    //private void coseEverthing()
+
+    public static void main(String[] args) {
+        new Client("127.0.0.1", 12345);
     }
 }
