@@ -9,12 +9,12 @@ public class ProtocolHandler {
             return input.substring(1).toUpperCase() + " [" + LocalDateTime.now() + "]";
         } else if (input.startsWith("1")) {
             if (input.substring(1).equalsIgnoreCase("SHUTDOWN")) {
-                return "SHUTDOWN"; // sinal especial para o servidor
+                return "SHUTDOWN"; // special signal for server
             } else {
                 return "Unknown command [" + LocalDateTime.now() + "]";
             }
         } else {
-            return "Unknown protocol type [" + LocalDateTime.now() + "]";
+            return input + " [" + LocalDateTime.now() + "]";
         }
     }
 }
