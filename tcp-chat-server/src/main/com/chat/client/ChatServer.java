@@ -3,7 +3,6 @@ package com.chat.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Map;
 import java.util.concurrent.*;
 
 public class ChatServer {
@@ -28,6 +27,9 @@ public class ChatServer {
 
     public static void main(String[] args) {
         System.out.println("[SERVER] Starting server on port " + PORT);
+
+        // >>> ADICIONA ISTO <<<
+        startAdminConsole();
 
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("[SERVER] Listening on port " + PORT);
@@ -74,6 +76,7 @@ public class ChatServer {
             }
         } catch (InterruptedException e) {
             pool.shutdownNow();
+            Thread.currentThread().interrupt();
         }
         System.out.println("[SERVER] Server stopped.");
         System.exit(0);
@@ -85,4 +88,23 @@ public class ChatServer {
                 " | Queue: " + pool.getQueue().size() +
                 " | Completed: " + pool.getCompletedTaskCount());
     }
+
+    private static void startAdminConsole() {
+        new Thread(() -> {
+            try (java.util.Scanner sc = new java.util.Scanner(System.in)) {
+                while (true) {
+                    String cmd = sc.nextLine().trim();
+                    switch (cmd) {
+                        case "/stats" -> logThreadPoolStatus();
+                        case "/clients" -> System.out.println("Users: " + String.join(", ", clients.keySet()));
+                        case "/shutdown" -> { stopServer(); return; }
+                        default -> System.out.println("Unknown: /stats | /clients | /shutdown");
+                    }
+                }
+            } catch (java.util.NoSuchElementException e) {
+                System.out.println("[ADMIN] STDIN closed; admin console exiting.");
+            }
+        }, "admin-console").start();
+    }
 }
+
