@@ -17,7 +17,7 @@ public class Client {
 
     private String lastSent = null;
 
-    // Histórico local
+
     private final List<String> history = new ArrayList<>();
     private static final int MAX_HISTORY = 2000;
 
@@ -25,7 +25,7 @@ public class Client {
         connectToServer(addr, port);
     }
 
-    /** Connects to the server and starts communication */
+
     private void connectToServer(String addr, int port) {
         try {
             socket = new Socket(addr, port);
@@ -44,15 +44,16 @@ public class Client {
         }
     }
 
-    /** Initializes input/output streams */
+
     private void setupStreams() throws IOException {
         scanner = new Scanner(System.in);
         out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
-    /** Separate thread that keeps listening for messages from the server */
+
     private void listenForMessages() {
+
         Thread reader = new Thread(() -> {
             try {
                 String line;
@@ -64,9 +65,9 @@ public class Client {
                     }
                     System.out.println(stamped);
                 }
-                System.out.println("[INFO] Disconnected from server.");
+                System.out.println("[Disconnected from server.");
             } catch (IOException e) {
-                System.out.println("[INFO] Connection closed: " + e.getMessage());
+                System.out.println("Connection closed: " + e.getMessage());
             }
         }, "server-listener");
 
@@ -74,7 +75,7 @@ public class Client {
         reader.start();
     }
 
-    /** Loop to send messages to the server */
+
     private void sendMessages() {
         try {
             while (true) {
@@ -86,7 +87,6 @@ public class Client {
                     break;
                 }
 
-                // -------- comandos locais --------
                 if (msg.startsWith("/history")) {
                     String[] t = msg.trim().split("\\s+");
                     int n = (t.length > 1) ? parseIntSafe(t[1], 20) : 20; // default 20
@@ -95,20 +95,21 @@ public class Client {
                         snapshot = new ArrayList<>(history);
                     }
                     if (snapshot.isEmpty()) {
-                        System.out.println("[local] Sem histórico.");
+                        System.out.println("[local] No history.");
                     } else {
                         int from = Math.max(0, snapshot.size() - n);
-                        System.out.println("[local] Últimas " + (snapshot.size() - from) + " linhas:");
+                        System.out.println("[local] Last " + (snapshot.size() - from) + " lines:");
                         for (int i = from; i < snapshot.size(); i++) System.out.println(snapshot.get(i));
                     }
-                    continue; // não enviar ao servidor
+                    continue;
                 }
+
 
                 if ("/repeat".equalsIgnoreCase(msg)) {
                     if (lastSent != null) {
                         System.out.println("[local] Resending: " + lastSent);
                         out.println(lastSent);
-                        // opcional: registar também no histórico local
+
                         synchronized (history) {
                             history.add("You: " + lastSent + " [" + LocalTime.now().withNano(0) + "]");
                             if (history.size() > MAX_HISTORY) history.remove(0);
@@ -116,14 +117,14 @@ public class Client {
                     } else {
                         System.out.println("[local] Nothing to repeat.");
                     }
-                    continue; // não enviar ao servidor (já reenviámos se havia)
+                    continue;
                 }
-                // -------- fim comandos locais --------
+
 
                 out.println(msg);
                 lastSent = msg;
 
-                // opcional: guardar o que enviaste no histórico local
+
                 synchronized (history) {
                     history.add("You: " + msg + " [" + LocalTime.now().withNano(0) + "]");
                     if (history.size() > MAX_HISTORY) history.remove(0);
@@ -138,7 +139,7 @@ public class Client {
         try { return Integer.parseInt(s); } catch (NumberFormatException e) { return fallback; }
     }
 
-    /** Closes all resources safely */
+
     private void closeEverything() {
         try {
             if (scanner != null) scanner.close();

@@ -1,4 +1,4 @@
-package com.chat.server;
+package com.chat.client;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -8,10 +8,10 @@ import java.util.concurrent.*;
 public class ChatServer {
     private static final int PORT = 12345;
 
-    // map of connected clients (username → handler)
+
     static final ConcurrentMap<String, ClientHandler> clients = new ConcurrentHashMap<>();
 
-    // thread pool config
+
     private static final int CORE_POOL_SIZE = 5;
     private static final int MAX_POOL_SIZE = 10;
     private static final long KEEP_ALIVE = 60L;
@@ -28,7 +28,7 @@ public class ChatServer {
     public static void main(String[] args) {
         System.out.println("[SERVER] Starting server on port " + PORT);
 
-        // >>> ADICIONA ISTO <<<
+
         startAdminConsole();
 
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {

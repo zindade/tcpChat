@@ -1,4 +1,4 @@
-package com.chat.server;
+package com.chat.client;
 
 import java.io.*;
 import java.net.Socket;
@@ -21,11 +21,11 @@ public class ClientHandler implements Runnable {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
 
-            // ask for username
+
             out.println("Enter your username:");
             username = in.readLine();
 
-            // check duplicates
+
             while (username == null || username.isBlank() || ChatServer.usernameExists(username)) {
                 out.println("Invalid or taken. Enter a different username:");
                 username = in.readLine();

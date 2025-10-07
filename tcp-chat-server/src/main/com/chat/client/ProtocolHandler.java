@@ -1,4 +1,4 @@
-package com.chat.server;
+package com.chat.client;
 
 import java.time.LocalDateTime;
 
@@ -9,7 +9,7 @@ public class ProtocolHandler {
             return input.substring(1).toUpperCase() + " [" + LocalDateTime.now() + "]";
         } else if (input.startsWith("1")) {
             if (input.substring(1).equalsIgnoreCase("SHUTDOWN")) {
-                return "SHUTDOWN"; // special signal for server
+                return "SHUTDOWN";
             } else {
                 return "Unknown command [" + LocalDateTime.now() + "]";
             }
